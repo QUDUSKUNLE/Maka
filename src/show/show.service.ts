@@ -118,17 +118,17 @@ export class ShowService {
         .getMany();
       return Array.from(
         result
-          .reduce((accumulator, show) => {
-            const itemID = `${show.inventories[0].itemID}`;
-            if (!accumulator.has(itemID)) {
+          .reduce<Map<string, ItemSold>>((accumulator, soldItem) => {
+            const itemID = `${soldItem.inventories[0].itemID}`;
+            if (!accumulator.get(itemID)) {
               accumulator.set(itemID, {
-                itemID: `${show.inventories[0].itemID}`,
-                itemName: show.inventories[0].itemName,
-                quantity_sold: show.quantity,
+                itemID: `${soldItem.inventories[0].itemID}`,
+                itemName: soldItem.inventories[0].itemName,
+                quantity_sold: soldItem.quantity,
               });
             } else {
-              const data = accumulator.get(itemID);
-              data['quantity_sold'] = data['quantity_sold'] + show.quantity;
+              const mappedItem = accumulator.get(itemID);
+              mappedItem.quantity_sold += soldItem.quantity;
             }
             return accumulator;
           }, new Map())
