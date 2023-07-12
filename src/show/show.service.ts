@@ -8,6 +8,7 @@ import { Repository, DataSource } from 'typeorm';
 import {
   CreateShowDto,
   SoldItemDto,
+  ItemSold,
   QuerySoldParams,
   SoldItemParams,
   GetSoldParams,
@@ -96,25 +97,16 @@ export class ShowService {
         })
         .getMany();
 
-      return (
-        Array.from(
-          result
-            .reduce((accumulator, show) => {
-              const itemID = `${show.inventories[0].itemID}`;
-              if (!accumulator.has(itemID)) {
-                accumulator.set(itemID, {
-                  itemID: `${show.inventories[0].itemID}`,
-                  itemName: show.inventories[0].itemName,
-                  quantity_sold: show.quantity,
-                });
-              } else {
-                const data = accumulator.get(itemID);
-                data['quantity_sold'] = data['quantity_sold'] + show.quantity;
-              }
-              return accumulator;
-            }, new Map())
-            .values(),
-        )[0] ?? { message: 'No item sold' }
+      return result.reduce<ItemSold>(
+        (accumulator, soldItem, index, arr) => {
+          accumulator.quantity_sold += soldItem.quantity;
+          if (index === arr.length - 1) {
+            accumulator.itemID = `${soldItem.inventories[0].itemID}`;
+            accumulator.itemName = soldItem.inventories[0].itemName;
+          }
+          return accumulator;
+        },
+        { quantity_sold: 0 },
       );
     }
     if (getSoldItems.show_ID) {

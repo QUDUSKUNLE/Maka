@@ -48,3 +48,9 @@ export class SoldItemParams {
   @IsNotEmpty()
   show_ID: string;
 }
+
+export interface ItemSold {
+  itemID?: string;
+  itemName?: string;
+  quantity_sold: number;
+}
