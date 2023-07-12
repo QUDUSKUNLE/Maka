@@ -114,7 +114,7 @@ export class ShowService {
               return accumulator;
             }, new Map())
             .values(),
-        )[0] ?? {}
+        )[0] ?? { message: 'No item sold' }
       );
     }
     if (getSoldItems.show_ID) {
