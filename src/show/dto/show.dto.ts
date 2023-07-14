@@ -6,7 +6,6 @@ import {
   Length,
   IsArray,
 } from 'class-validator';
-import { PartialType, OmitType, PickType } from '@nestjs/mapped-types';
 
 class ShowDto {
   @IsOptional()
@@ -27,16 +26,14 @@ export class SoldItemDto {
   readonly quantity: number;
 }
 
-export class QuerySoldParams {
-  @IsString()
-  @IsOptional()
-  item_ID?: string;
-}
-
 export class GetSoldParams {
   @IsString()
   @IsNotEmpty()
   show_ID: string;
+
+  @IsString()
+  @IsOptional()
+  item_ID?: string;
 }
 
 export class SoldItemParams {
@@ -47,10 +44,4 @@ export class SoldItemParams {
   @IsString()
   @IsNotEmpty()
   show_ID: string;
-}
-
-export interface ItemSold {
-  itemID?: string;
-  itemName?: string;
-  quantity_sold: number;
 }

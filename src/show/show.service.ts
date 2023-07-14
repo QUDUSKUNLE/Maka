@@ -3,52 +3,58 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
 import {
   CreateShowDto,
   SoldItemDto,
-  ItemSold,
-  QuerySoldParams,
   SoldItemParams,
   GetSoldParams,
 } from './dto/show.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { ItemSold } from './interfaces/shows.interfaces';
 import { InventoryService } from '../inventory/inventory.service';
-import { Show, SoldItem } from './entities/show.entity';
 
 @Injectable()
 export class ShowService {
   constructor(
-    @InjectRepository(Show)
-    private readonly showRepository: Repository<Show>,
-    @InjectRepository(SoldItem)
-    private readonly soldItemRepository: Repository<SoldItem>,
-    private readonly datasource: DataSource,
     private readonly inventoryService: InventoryService,
+    private readonly prismaService: PrismaService,
   ) {}
 
-  create(createShowDto: CreateShowDto) {
+  CreateShow(createShowDto: CreateShowDto) {
     try {
-      const shows = createShowDto.createShow.reduce<Show[]>(
-        (accumulator, createShow) => {
-          accumulator.push(this.showRepository.create(createShow));
-          return accumulator;
-        },
-        [],
-      );
-      return this.datasource.manager.save(shows);
+      return this.prismaService.show.createMany({
+        data: createShowDto.createShow,
+      });
     } catch (error) {
       throw error;
     }
   }
 
-  getShows(): Promise<Show[]> {
-    return this.showRepository.createQueryBuilder().getMany();
+  GetShows() {
+    return this.prismaService.show.findMany();
   }
 
-  async buyItem(soldItemParams: SoldItemParams, soldItemDto: SoldItemDto) {
+  UpdateShow() {
+    throw new Error('Method not implemented.');
+  }
+
+  DeleteShow(): Promise<unknown> {
+    throw new Error('Method not implemented.');
+  }
+
+  GetShow(showID: number) {
     try {
-      const item = await this.inventoryService.getInventory(
+      return this.prismaService.show.findUnique({
+        where: { showID },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async BuyItem(soldItemParams: SoldItemParams, soldItemDto: SoldItemDto) {
+    try {
+      const item = await this.inventoryService.GetInventory(
         +soldItemParams.item_ID,
       );
       if (
@@ -58,82 +64,67 @@ export class ShowService {
       ) {
         throw new BadRequestException('Item out of stock');
       }
-      const show = await this.getShow(+soldItemParams.show_ID);
+      const show = await this.GetShow(+soldItemParams.show_ID);
       if (!show) {
         throw new UnauthorizedException('Show does not exist');
       }
       item.quantity -= soldItemDto.quantity;
-      await this.inventoryService.updateInventory(item);
-      return this.soldItemRepository.save({
-        show: show,
-        inventories: [item],
-        quantity: soldItemDto.quantity,
+      await this.inventoryService.UpdateInventory(item);
+      return this.prismaService.soldInventories.create({
+        data: {
+          showId: show.showID,
+          inventoryId: item.itemID,
+          quantity: soldItemDto.quantity,
+        },
       });
     } catch (error) {
       throw error;
     }
   }
 
-  getShow(showID: number): Promise<Show> {
-    try {
-      return this.showRepository.findOne({ where: { showID } });
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async getSoldItems(
-    getSoldItems: GetSoldParams,
-    querySoldParams: QuerySoldParams,
-  ) {
-    if (querySoldParams.item_ID && getSoldItems.show_ID) {
-      const result = await this.datasource
-        .getRepository(SoldItem)
-        .createQueryBuilder('soldItem')
-        .leftJoinAndSelect('soldItem.inventories', 'inventory')
-        .where('soldItem.show = :showID', { showID: +getSoldItems.show_ID })
-        .andWhere('inventory.itemID = :itemID', {
-          itemID: +querySoldParams.item_ID,
-        })
-        .getMany();
-
-      return result.reduce<ItemSold>(
-        (accumulator, soldItem, index, arr) => {
-          accumulator.quantity_sold += soldItem.quantity;
-          if (index === arr.length - 1) {
-            accumulator.itemID = `${soldItem.inventories[0].itemID}`;
-            accumulator.itemName = soldItem.inventories[0].itemName;
-          }
-          return accumulator;
+  async GetSoldItems(getSoldItems: GetSoldParams) {
+    if (getSoldItems.item_ID && getSoldItems.show_ID) {
+      const result = await this.prismaService.soldInventories.findMany({
+        where: {
+          showId: +getSoldItems.show_ID,
+          inventoryId: +getSoldItems.item_ID,
         },
-        { quantity_sold: 0 },
-      );
+        include: { inventory: true },
+      });
+      const item: ItemSold = { quantity_sold: 0 };
+      for (const sold of result) {
+        const itemID = `${sold.inventory.itemID}`;
+        const getItem = item[itemID];
+        if (!getItem) {
+          item.itemID = itemID;
+          item.itemName = sold.inventory.itemName;
+          item.quantity_sold += sold.quantity;
+        } else {
+          item.quantity_sold += sold.quantity;
+        }
+      }
+      return item;
     }
     if (getSoldItems.show_ID) {
-      const result = await this.datasource
-        .getRepository(SoldItem)
-        .createQueryBuilder('soldItem')
-        .leftJoinAndSelect('soldItem.inventories', 'inventory')
-        .where({ show: +getSoldItems.show_ID })
-        .getMany();
-      return Array.from(
-        result
-          .reduce<Map<string, ItemSold>>((accumulator, soldItem) => {
-            const itemID = `${soldItem.inventories[0].itemID}`;
-            if (!accumulator.get(itemID)) {
-              accumulator.set(itemID, {
-                itemID: `${soldItem.inventories[0].itemID}`,
-                itemName: soldItem.inventories[0].itemName,
-                quantity_sold: soldItem.quantity,
-              });
-            } else {
-              const mappedItem = accumulator.get(itemID);
-              mappedItem.quantity_sold += soldItem.quantity;
-            }
-            return accumulator;
-          }, new Map())
-          .values(),
-      );
+      const result = await this.prismaService.soldInventories.findMany({
+        where: { showId: +getSoldItems.show_ID },
+        include: { inventory: true },
+      });
+      const item: Map<string, ItemSold> = new Map();
+      for (const sold of result) {
+        const itemID = `${sold.inventory.itemID}`;
+        const getItem = item.get(itemID);
+        if (!getItem) {
+          item.set(itemID, {
+            itemID,
+            itemName: sold.inventory.itemName,
+            quantity_sold: sold.quantity,
+          });
+        } else {
+          getItem.quantity_sold += sold.quantity;
+        }
+      }
+      return Array.from(item.values());
     }
     return [];
   }

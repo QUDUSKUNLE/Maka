@@ -20,7 +20,7 @@ $ npm start
 ## Populate with some test data using the following endpoints
 
 - Create batch of inventories
-> POST /inventory
+> POST /inventories
    ```Body
      {
        "createInventory":[
@@ -32,7 +32,7 @@ $ npm start
      }
    ```
 - Create batches of shows
-> POST /show
+> POST /shows
    ```Body
     {
       "createShow":[
@@ -44,14 +44,14 @@ $ npm start
     }
    ```
 - Buy an item from a show
-> POST /show/:show_ID/buy_item/:item_ID
+> POST /shows/:show_ID/buy_items/:item_ID
   ```Body
     {
       "quantity": 1 // Quantity of item to be bought
     }
   ```
 - View list of items sold by a show or amount of items sold by a show
-> GET /show/:show_ID/sold_items?item_ID={item_ID}
+> GET /shows/:show_ID/sold_items?item_ID={item_ID}
 
 ## Constraints
 ```bash

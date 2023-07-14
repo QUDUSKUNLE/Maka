@@ -7,49 +7,44 @@ import {
   Query,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { Show } from './entities/show.entity';
 import {
   CreateShowDto,
   SoldItemDto,
   SoldItemParams,
-  QuerySoldParams,
   GetSoldParams,
 } from './dto/show.dto';
 import { ShowService } from './show.service';
 
-@Controller('show')
+@Controller('shows')
 export class ShowController {
   constructor(private readonly showService: ShowService) {}
 
   @Post()
   async create(@Body() createShowDto: CreateShowDto) {
     try {
-      await this.showService.create(createShowDto);
-      return { message: 'Content creators seeded successfully.' };
+      await this.showService.CreateShow(createShowDto);
+      return { message: 'Content creators created successfully.' };
     } catch (error) {
       throw new UnprocessableEntityException(error);
     }
   }
 
   @Get()
-  getShow(): Promise<Show[]> {
-    return this.showService.getShows();
+  GetShows() {
+    return this.showService.GetShows();
   }
 
-  @Post(':show_ID/buy_item/:item_ID')
+  @Post([':show_ID/buy_items/:item_ID'])
   async buyItem(
     @Param() soldItemParams: SoldItemParams,
     @Body() soldItemDto: SoldItemDto,
   ) {
-    await this.showService.buyItem(soldItemParams, soldItemDto);
+    await this.showService.BuyItem(soldItemParams, soldItemDto);
     return { message: 'Item bought successfully' };
   }
 
-  @Get(':show_ID/sold_items')
-  async getSoldItems(
-    @Param() getSoldItems: GetSoldParams,
-    @Query() querySoldParams: QuerySoldParams,
-  ) {
-    return await this.showService.getSoldItems(getSoldItems, querySoldParams);
+  @Get([':show_ID/sold_items', ':show_ID/sold_items/:item_ID'])
+  async getSoldItems(@Param() getSoldItems: GetSoldParams) {
+    return await this.showService.GetSoldItems(getSoldItems);
   }
 }
