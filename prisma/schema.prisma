@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Question {
+  id        Int     @id
+  firstname String? @db.VarChar(50)
+}
+
+model Article {
+  id          Int      @id @default(autoincrement())
+  title       String   @unique
+  description String?
+  body        String
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("articles")
+}
+
+model Inventory {
+  itemID      Int      @id @default(autoincrement()) @map("item_id")
+  itemName    String   @map("item_name")
+  quantity    Int
+  createdAt   DateTime @default(now())  @map("created_at")
+  updatedAt   DateTime @updatedAt       @map("updated_at")
+
+  shows       SoldInventories[]
+
+  @@map("inventories")
+}
+
+model Show {
+  showID      Int      @id @default(autoincrement()) @map("show_id")
+  showName    String   @map("show_name")
+  createdAt   DateTime @default(now())  @map("created_at")
+  updatedAt   DateTime @updatedAt       @map("updated_at")
+
+  inventories   SoldInventories[]
+
+  @@map("shows")
+}
+
+model SoldInventories {
+  id             Int        @id @default(autoincrement())
+  inventory      Inventory  @relation(fields: [inventoryId], references: [itemID], onDelete: Cascade, onUpdate: Cascade)
+  inventoryId    Int        @map("inventory_id")   
+  show           Show       @relation(fields: [showId], references: [showID], onDelete: Cascade, onUpdate: Cascade)
+  showId         Int        @map("show_id")
+  quantity       Int        
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@map("inventories_sold")
+}
