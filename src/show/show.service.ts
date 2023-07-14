@@ -9,7 +9,7 @@ import {
   SoldItemParams,
   GetSoldParams,
 } from './dto/show.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { ItemSold } from './interfaces/shows.interfaces';
 import { InventoryService } from '../inventory/inventory.service';
 
