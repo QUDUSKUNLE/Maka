@@ -1,14 +1,10 @@
 import {
   BadRequestException,
   Injectable,
-  UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
-import {
-  CreateShowDto,
-  SoldItemDto,
-  SoldItemParams,
-  GetSoldParams,
-} from './dto/show.dto';
+import { CreateShowDto, SoldItemParams, GetSoldParams } from './dto/show.dto';
+import { BuyItemDto } from './dto/buyItem.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { ItemSold } from './interfaces/shows.interfaces';
 import { InventoryService } from '../inventory/inventory.service';
@@ -20,14 +16,10 @@ export class ShowService {
     private readonly prismaService: PrismaService,
   ) {}
 
-  CreateShow(createShowDto: CreateShowDto) {
-    try {
-      return this.prismaService.show.createMany({
-        data: createShowDto.createShow,
-      });
-    } catch (error) {
-      throw error;
-    }
+  async CreateShow(createShowDto: CreateShowDto) {
+    return await this.prismaService.show.createMany({
+      data: createShowDto.createShow,
+    });
   }
 
   GetShows() {
@@ -42,32 +34,24 @@ export class ShowService {
     throw new Error('Method not implemented.');
   }
 
-  GetShow(showID: number) {
-    try {
-      return this.prismaService.show.findUnique({
-        where: { showID },
-      });
-    } catch (error) {
-      throw error;
-    }
+  async GetShow(showID: number) {
+    const result = await this.prismaService.show.findUnique({
+      where: { showID },
+    });
+    if (!result) throw new NotFoundException('Show not found.');
+    return result;
   }
 
-  async BuyItem(soldItemParams: SoldItemParams, soldItemDto: SoldItemDto) {
+  async BuyItem(soldItemParams: SoldItemParams, soldItemDto: BuyItemDto) {
     try {
+      if (this.checkQuantity(soldItemDto))
+        throw new BadRequestException('Zero order made.');
       const item = await this.inventoryService.GetInventory(
         +soldItemParams.item_ID,
       );
-      if (
-        !item ||
-        item.quantity === 0 ||
-        item.quantity < soldItemDto.quantity
-      ) {
+      if (this.checkQuantity(soldItemDto, item.quantity))
         throw new BadRequestException('Item out of stock');
-      }
       const show = await this.GetShow(+soldItemParams.show_ID);
-      if (!show) {
-        throw new UnauthorizedException('Show does not exist');
-      }
       item.quantity -= soldItemDto.quantity;
       await this.inventoryService.UpdateInventory(item);
       return this.prismaService.soldInventories.create({
@@ -82,7 +66,9 @@ export class ShowService {
     }
   }
 
-  async GetSoldItems(getSoldItems: GetSoldParams) {
+  async GetSoldItems(
+    getSoldItems: GetSoldParams,
+  ): Promise<Array<ItemSold> | ItemSold> {
     if (getSoldItems.item_ID && getSoldItems.show_ID) {
       const result = await this.prismaService.soldInventories.findMany({
         where: {
@@ -98,8 +84,6 @@ export class ShowService {
         if (!getItem) {
           item.itemID = itemID;
           item.itemName = sold.inventory.itemName;
-          item.quantity_sold += sold.quantity;
-        } else {
           item.quantity_sold += sold.quantity;
         }
       }
@@ -126,6 +110,13 @@ export class ShowService {
       }
       return Array.from(item.values());
     }
-    return [];
+  }
+
+  private checkQuantity(soldItemDto: BuyItemDto, quantity?: number): boolean {
+    return (
+      soldItemDto.quantity === 0 ||
+      quantity < soldItemDto.quantity ||
+      quantity === 0
+    );
   }
 }
