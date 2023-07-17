@@ -7,12 +7,8 @@ import {
   Query,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import {
-  CreateShowDto,
-  SoldItemDto,
-  SoldItemParams,
-  GetSoldParams,
-} from './dto/show.dto';
+import { CreateShowDto, SoldItemParams, GetSoldParams } from './dto/show.dto';
+import { BuyItemDto } from './dto/buyItem.dto';
 import { ShowService } from './show.service';
 
 @Controller('shows')
@@ -37,7 +33,7 @@ export class ShowController {
   @Post([':show_ID/buy_items/:item_ID'])
   async buyItem(
     @Param() soldItemParams: SoldItemParams,
-    @Body() soldItemDto: SoldItemDto,
+    @Body() soldItemDto: BuyItemDto,
   ) {
     await this.showService.BuyItem(soldItemParams, soldItemDto);
     return { message: 'Item bought successfully' };

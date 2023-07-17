@@ -21,11 +21,6 @@ export class CreateShowDto {
   readonly createShow: ShowDto[];
 }
 
-export class SoldItemDto {
-  @IsNumber()
-  readonly quantity: number;
-}
-
 export class GetSoldParams {
   @IsString()
   @IsNotEmpty()
