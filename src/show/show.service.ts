@@ -44,10 +44,12 @@ export class ShowService {
 
   async BuyItem(soldItemParams: SoldItemParams, soldItemDto: BuyItemDto) {
     try {
+      if (this.checkQuantity(soldItemDto))
+        throw new BadRequestException('Zero order made.');
       const item = await this.inventoryService.GetInventory(
         +soldItemParams.item_ID,
       );
-      if (this.checkQuantity(item.quantity, soldItemDto))
+      if (this.checkQuantity(soldItemDto, item.quantity))
         throw new BadRequestException('Item out of stock');
       const show = await this.GetShow(+soldItemParams.show_ID);
       item.quantity -= soldItemDto.quantity;
@@ -110,7 +112,11 @@ export class ShowService {
     }
   }
 
-  private checkQuantity(quantity: number, soldItemDto: BuyItemDto): boolean {
-    return quantity === 0 || quantity < soldItemDto.quantity;
+  private checkQuantity(soldItemDto: BuyItemDto, quantity?: number): boolean {
+    return (
+      soldItemDto.quantity === 0 ||
+      quantity < soldItemDto.quantity ||
+      quantity === 0
+    );
   }
 }

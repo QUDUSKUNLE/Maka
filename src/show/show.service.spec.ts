@@ -69,10 +69,10 @@ describe('ShowService', () => {
       .GetShow(10000)
       .catch((error) => expect(error?.message).toEqual('Show not found.'));
   });
-  it('should throw error order out of stock', async () => {
+  it('should throw error with quantity=0', async () => {
     return service
       .BuyItem(soldItemParams, soldItemDto)
-      .catch((error) => expect(error?.message).toEqual('Item out of stock'));
+      .catch((error) => expect(error?.message).toEqual('Zero order made.'));
   });
   it('should throw error with quantity more than what is in stock', async () => {
     return service
@@ -80,8 +80,8 @@ describe('ShowService', () => {
       .catch((error) => expect(error?.message).toEqual('Item out of stock'));
   });
   it('should throw error show not found', async () => {
-    return service
-      .BuyItem(soldItemShowNotFound, soldItemDto)
-      .catch((error) => expect(error?.message).toEqual('Show not found.'));
+    await expect(
+      service.BuyItem(soldItemShowNotFound, { quantity: 2 }),
+    ).rejects.toThrowError('Show not found.');
   });
 });
