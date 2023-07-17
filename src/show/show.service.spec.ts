@@ -47,7 +47,7 @@ describe('ShowService', () => {
   });
   it('should return array of bought items', async () => {
     const items = (await service.GetSoldItems({
-      show_ID: '3',
+      show_ID: '1',
     })) as Array<ItemSold>;
     expect(items.length).toBeGreaterThanOrEqual(1);
   });

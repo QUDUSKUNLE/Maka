@@ -12,7 +12,7 @@ describe('PrismaService', () => {
     service = module.get<PrismaService>(PrismaService);
   });
 
-  it.skip('should be defined', () => {
+  it('should be defined', () => {
     expect(service).toBeDefined();
   });
 });

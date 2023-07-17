@@ -83,8 +83,6 @@ export class ShowService {
           item.itemID = itemID;
           item.itemName = sold.inventory.itemName;
           item.quantity_sold += sold.quantity;
-        } else {
-          item.quantity_sold += sold.quantity;
         }
       }
       return item;
