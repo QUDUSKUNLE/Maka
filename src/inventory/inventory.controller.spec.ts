@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { InventoryController } from './inventory.controller';
-import { InventoryModule } from './inventory.module';
 import { InventoryService } from './inventory.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateInventoryDto } from './dto/inventory.dto';
