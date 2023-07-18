@@ -16,72 +16,89 @@ describe('ShowService', () => {
   const soldItemQuantityDto = {
     quantity: 1,
   };
-  let service: ShowService;
-
+  let spyShowService: ShowService;
+  let prisma: PrismaService;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [ShowService, PrismaService, InventoryService],
     }).compile();
 
-    service = module.get<ShowService>(ShowService);
+    spyShowService = module.get<ShowService>(ShowService);
+    prisma = module.get<PrismaService>(PrismaService);
   });
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(spyShowService).toBeDefined();
+    expect(prisma).toBeDefined();
   });
   it('should create possible number of shows', async () => {
-    const show = await service.CreateShow(createShow);
+    prisma.show.createMany = jest.fn().mockReturnValue({ count: 2 });
+    const show = await spyShowService.CreateShow(createShow);
     expect(show.count).toStrictEqual(createShow.createShow.length);
   });
   it('should be able to return some shows', async () => {
-    const show = await service.GetShows();
+    prisma.show.findMany = jest.fn().mockReturnValue([
+      { showID: '1', showName: 'Show 1' },
+      { showID: '2', showName: 'Show 2' },
+    ]);
+    const show = await spyShowService.GetShows();
     expect(typeof show).toEqual(typeof []);
   });
   it('should return an show of a given id', async () => {
-    const show = await service.GetShow(1);
+    prisma.show.findUnique = jest
+      .fn()
+      .mockReturnValue({ showID: 1, showName: 'Show 1' });
+    const show = await spyShowService.GetShow(1);
     expect(show.showID).toBeDefined();
     expect(typeof show.showID).toEqual('number');
   });
   it('should return a bought item from a show', async () => {
-    const buyItem = await service.BuyItem(soldItemParams, soldItemQuantityDto);
+    const buyItem = await spyShowService.BuyItem(
+      soldItemParams,
+      soldItemQuantityDto,
+    );
     expect(buyItem.id).toBeDefined();
   });
   it('should return array of bought items', async () => {
-    const items = (await service.GetSoldItems({
+    const items = (await spyShowService.GetSoldItems({
       show_ID: '1',
     })) as Array<ItemSold>;
     expect(items.length).toBeGreaterThanOrEqual(1);
   });
   it('should return object of bought item', async () => {
-    const items = (await service.GetSoldItems({
+    const items = (await spyShowService.GetSoldItems({
       show_ID: '3',
       item_ID: '1',
     })) as ItemSold;
     expect(items.itemID).toBeDefined();
   });
   it('should throw an error when Update Show not implemented', () => {
-    expect(() => service.UpdateShow()).toThrowError('Method not implemented.');
+    expect(() => spyShowService.UpdateShow()).toThrowError(
+      'Method not implemented.',
+    );
   });
   it('should throw an error when Delete Show not implemented', () => {
-    expect(() => service.DeleteShow()).toThrowError('Method not implemented.');
+    expect(() => spyShowService.DeleteShow()).toThrowError(
+      'Method not implemented.',
+    );
   });
   it('should throw an error Show not found with showID=10000', () => {
-    return service
+    return spyShowService
       .GetShow(10000)
       .catch((error) => expect(error?.message).toEqual('Show not found.'));
   });
   it('should throw error with quantity=0', async () => {
-    return service
+    return spyShowService
       .BuyItem(soldItemParams, soldItemDto)
       .catch((error) => expect(error?.message).toEqual('Zero order made.'));
   });
   it('should throw error with quantity more than what is in stock', async () => {
-    return service
+    return spyShowService
       .BuyItem(soldItemParams, { quantity: 1000 })
       .catch((error) => expect(error?.message).toEqual('Item out of stock'));
   });
   it('should throw error show not found', async () => {
     await expect(
-      service.BuyItem(soldItemShowNotFound, { quantity: 2 }),
+      spyShowService.BuyItem(soldItemShowNotFound, { quantity: 2 }),
     ).rejects.toThrowError('Show not found.');
   });
 });

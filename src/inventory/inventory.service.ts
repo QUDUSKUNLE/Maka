@@ -31,8 +31,4 @@ export class InventoryService {
       data: { ...updateInventoryDto },
     });
   }
-
-  DeleteInventory(id: string, unknown?: unknown) {
-    throw new Error('Method not implemented.');
-  }
 }
