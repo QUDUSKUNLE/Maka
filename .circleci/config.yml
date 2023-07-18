@@ -19,9 +19,9 @@ jobs:
 workflows:
   build_and_test:
     jobs:
-      - test:
-          filters:
-            branches:
-              only:
-                - '*'
+      - test
+          # filters:
+          #   branches:
+          #     only:
+          #       - 'main'
 
