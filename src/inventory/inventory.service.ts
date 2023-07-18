@@ -1,37 +1,34 @@
-import { Injectable } from '@nestjs/common';
-import { Inventory } from './entities/inventory.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateInventoryDto, UpdateInventoryDto } from './dto/inventory.dto';
 
 @Injectable()
 export class InventoryService {
-  constructor(
-    @InjectRepository(Inventory)
-    private readonly inventoryRepository: Repository<Inventory>,
-    private readonly dataSource: DataSource,
-  ) {}
+  constructor(private readonly prismaService: PrismaService) {}
+  async CreateInventory(createInventoryDto: CreateInventoryDto) {
+    return await this.prismaService.inventory.createMany({
+      data: createInventoryDto.createInventory,
+    });
+  }
 
-  create(createInventoryDto: CreateInventoryDto) {
-    const inventories = createInventoryDto.createInventory.reduce<Inventory[]>(
-      (accumulator, createInventory) => {
-        accumulator.push(this.inventoryRepository.create(createInventory));
-        return accumulator;
+  GetInventories() {
+    return this.prismaService.inventory.findMany();
+  }
+
+  async GetInventory(itemID: number) {
+    const result = await this.prismaService.inventory.findUnique({
+      where: { itemID },
+    });
+    if (!result) throw new NotFoundException('Item not found.');
+    return result;
+  }
+
+  async UpdateInventory(updateInventoryDto: UpdateInventoryDto) {
+    return this.prismaService.inventory.update({
+      where: {
+        itemID: updateInventoryDto.itemID,
       },
-      [],
-    );
-    return this.dataSource.manager.save(inventories);
-  }
-
-  async getAll() {
-    return this.inventoryRepository.createQueryBuilder().getMany();
-  }
-
-  getInventory(itemID: number): Promise<Inventory> {
-    return this.inventoryRepository.findOne({ where: { itemID } });
-  }
-
-  updateInventory(updateInventoryDto: UpdateInventoryDto): Promise<Inventory> {
-    return this.inventoryRepository.save(updateInventoryDto);
+      data: { ...updateInventoryDto },
+    });
   }
 }

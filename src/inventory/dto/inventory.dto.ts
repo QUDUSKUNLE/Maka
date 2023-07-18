@@ -23,4 +23,7 @@ export class CreateInventoryDto {
   readonly createInventory: InventoryDto[];
 }
 
-export class UpdateInventoryDto extends PartialType(InventoryDto) {}
+export class UpdateInventoryDto extends PartialType(InventoryDto) {
+  @IsNumber()
+  readonly itemID: number;
+}

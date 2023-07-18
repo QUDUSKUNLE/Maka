@@ -1,10 +1,10 @@
-import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { AppModule } from './app.module';
+import { NestFactory } from '@nestjs/core';
+import { MakaModule } from './maka.module';
 
 (async () => {
-  const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(
+  const maka = await NestFactory.create(MakaModule);
+  maka.useGlobalPipes(
     new ValidationPipe({
       transform: true,
       always: true,
@@ -14,5 +14,5 @@ import { AppModule } from './app.module';
       },
     }),
   );
-  await app.listen(3000);
+  await maka.listen(3000);
 })();
