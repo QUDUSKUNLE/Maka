@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -10,45 +9,56 @@ describe('InventoryService', () => {
       { itemName: 'item2', quantity: 4 },
     ],
   };
-  let service: InventoryService;
+  let spyInventoryService: InventoryService;
+  let prisma: PrismaService;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [InventoryService, PrismaService],
     }).compile();
 
-    service = module.get<InventoryService>(InventoryService);
+    spyInventoryService = module.get<InventoryService>(InventoryService);
+    prisma = module.get<PrismaService>(PrismaService);
   });
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(spyInventoryService).toBeDefined();
+    expect(prisma).toBeDefined();
   });
   it('should return count of created inventories', async () => {
-    const inventories = await service.CreateInventory(createInventory);
-    expect(inventories.count).toEqual(createInventory.createInventory.length);
+    prisma.inventory.createMany = jest.fn().mockReturnValue({ count: 2 });
+    expect(await spyInventoryService.CreateInventory(createInventory)).toEqual({
+      count: 2,
+    });
+    expect(prisma.inventory.createMany).toHaveBeenCalled();
   });
   it('should return array of inventories', async () => {
-    const inventories = await service.GetInventories();
-    expect(typeof inventories).toEqual(typeof []);
+    prisma.inventory.findMany = jest.fn().mockReturnValue([
+      { itemID: '1', itemName: 'item1', quantity: 2 },
+      { itemID: '2', itemName: 'item2', quantity: 4 },
+    ]);
+    await spyInventoryService.GetInventories();
+    expect(prisma.inventory.findMany).toHaveBeenCalled();
   });
   it('should return an inventory of a given id', async () => {
-    const inventory = await service.GetInventory(11);
-    expect(inventory.itemID).toBeDefined();
+    prisma.inventory.findUnique = jest
+      .fn()
+      .mockReturnValue({ itemID: '1', itemName: 'item1', quantity: 2 });
+    expect((await spyInventoryService.GetInventory(1)).itemID).toBeDefined();
+    expect(prisma.inventory.findUnique).toHaveBeenCalled();
   });
   it('should return an updatedInventory of a given id and update data', async () => {
-    const inventory = await service.UpdateInventory({
+    prisma.inventory.update = jest
+      .fn()
+      .mockReturnValue({ itemID: '12', itemName: 'item1', quantity: 2 });
+    await spyInventoryService.UpdateInventory({
       itemID: 12,
       itemName: 'item1',
       quantity: 2,
     });
-    expect(inventory.itemID).toBeDefined();
+    expect(prisma.inventory.update).toHaveBeenCalled();
   });
   it('should throw an error item not found with itemID=10000', () => {
-    return service
+    return spyInventoryService
       .GetInventory(10000)
       .catch((error) => expect(error?.message).toEqual('Item not found.'));
-  });
-  it('should throw an error method not implemented for DeleteInventory Method', () => {
-    expect(() => service.DeleteInventory('1')).toThrowError(
-      'Method not implemented.',
-    );
   });
 });

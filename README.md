@@ -1,7 +1,7 @@
 # Maka Home Test
 
 ## Local set up
-#### clone the app & run 
+## clone the app & run 
 ```bash
 git clone git@github.com:QUDUSKUNLE/Maka.git && cd Maka
 ```
@@ -9,12 +9,12 @@ git clone git@github.com:QUDUSKUNLE/Maka.git && cd Maka
 ## Installation
 
 ```bash
-$ npm install
+npm install
 ```
 
 ## Running the app
 ```bash
-$ npm start
+npm start
 ```
 
 ## Populate with some test data using the following endpoints
