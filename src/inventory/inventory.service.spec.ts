@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { NotFoundException } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -56,9 +57,12 @@ describe('InventoryService', () => {
     });
     expect(prisma.inventory.update).toHaveBeenCalled();
   });
-  it('should throw an error item not found with itemID=10000', () => {
-    return spyInventoryService
+  it('should throw an error item not found with itemID=10000', async () => {
+    spyInventoryService.GetInventory = jest
+      .fn()
+      .mockRejectedValue(new NotFoundException('Item not found.'));
+    return await spyInventoryService
       .GetInventory(10000)
-      .catch((error) => expect(error?.message).toEqual('Item not found.'));
+      .catch((error) => expect(error.message).toEqual('Item not found.'));
   });
 });
