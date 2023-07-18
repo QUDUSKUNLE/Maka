@@ -15,17 +15,6 @@ jobs:
           name: Run tests
       - store_artifacts:
           path: coverage
-  build:
-    executor: node/default
-    steps:
-      - checkout
-      - run:
-          command: npm run build
-          name: Build Maka
-      - persist_to_workspace:
-          root: ~/project
-          paths:
-            - .
 
 workflows:
   build_and_test:
@@ -35,7 +24,4 @@ workflows:
             branches:
               only:
                 - 'prisma'
-      - build:
-          requires:
-            - test
 
