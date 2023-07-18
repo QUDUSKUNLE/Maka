@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Query,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { CreateShowDto, SoldItemParams, GetSoldParams } from './dto/show.dto';
 import { BuyItemDto } from './dto/buyItem.dto';
 import { ShowService } from './show.service';
@@ -17,12 +9,8 @@ export class ShowController {
 
   @Post()
   async create(@Body() createShowDto: CreateShowDto) {
-    try {
-      await this.showService.CreateShow(createShowDto);
-      return { message: 'Content creators created successfully.' };
-    } catch (error) {
-      throw new UnprocessableEntityException(error);
-    }
+    await this.showService.CreateShow(createShowDto);
+    return { message: 'Content creators created successfully.' };
   }
 
   @Get()
@@ -31,7 +19,7 @@ export class ShowController {
   }
 
   @Post([':show_ID/buy_items/:item_ID'])
-  async buyItem(
+  async BuyItem(
     @Param() soldItemParams: SoldItemParams,
     @Body() soldItemDto: BuyItemDto,
   ) {
@@ -40,7 +28,7 @@ export class ShowController {
   }
 
   @Get([':show_ID/sold_items', ':show_ID/sold_items/:item_ID'])
-  async getSoldItems(@Param() getSoldItems: GetSoldParams) {
+  async GetSoldItems(@Param() getSoldItems: GetSoldParams) {
     return await this.showService.GetSoldItems(getSoldItems);
   }
 }
