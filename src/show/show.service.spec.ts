@@ -53,11 +53,14 @@ describe('ShowService', () => {
     expect(typeof show.showID).toEqual('number');
   });
   it('should return a bought item from a show', async () => {
+    prisma.show.findUnique = jest
+      .fn()
+      .mockReturnValue({ showId: 1, showName: 'Show 1' });
     const buyItem = await spyShowService.BuyItem(
       soldItemParams,
       soldItemQuantityDto,
     );
-    expect(buyItem.id).toBeDefined();
+    expect(buyItem.showId).toBeDefined();
   });
   it('should return array of bought items', async () => {
     spyShowService.GetSoldItems = jest
