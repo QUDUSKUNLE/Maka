@@ -53,7 +53,7 @@ describe('ShowService', () => {
     expect(typeof show.showID).toEqual('number');
   });
   it('should return a bought item from a show', async () => {
-    prisma.show.findUnique = jest
+    spyShowService.BuyItem = jest
       .fn()
       .mockReturnValue({ showId: 1, showName: 'Show 1' });
     const buyItem = await spyShowService.BuyItem(
