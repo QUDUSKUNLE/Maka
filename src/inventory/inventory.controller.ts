@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { CreateInventoryDto } from './dto/inventory.dto';
 
@@ -15,12 +8,8 @@ export class InventoryController {
 
   @Post()
   async Create(@Body() createInventoryDto: CreateInventoryDto) {
-    try {
-      await this.inventoryService.CreateInventory(createInventoryDto);
-      return { message: 'Inventory submitted' };
-    } catch (error) {
-      throw new UnprocessableEntityException(error);
-    }
+    await this.inventoryService.CreateInventory(createInventoryDto);
+    return { message: 'Inventory submitted' };
   }
 
   @Get()
@@ -30,10 +19,6 @@ export class InventoryController {
 
   @Get([':itemID'])
   Get(@Param('itemID') itemID: string) {
-    try {
-      return this.inventoryService.GetInventory(+itemID);
-    } catch (error) {
-      throw error;
-    }
+    return this.inventoryService.GetInventory(+itemID);
   }
 }
