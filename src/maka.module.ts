@@ -8,4 +8,4 @@ import { AppointmentService } from './appointment/appointment.service';
   imports: [InventoryModule, ShowModule, PrismaModule],
   providers: [AppointmentService],
 })
-export class AppModule {}
+export class MakaModule {}
