@@ -1,24 +1,34 @@
-import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
-import { AppModule } from '../src/maka.module';
+import { INestApplication } from '@nestjs/common';
+import { InventoryModule } from '../src/inventory/inventory.module';
+import { ShowModule } from '../src/show/show.module';
+import { PrismaModule } from '../src/prisma/prisma.module';
+import { AppointmentService } from '../src/appointment/appointment.service';
+import { ShowService } from '../src/show/show.service';
+import { Test } from '@nestjs/testing';
+import { MakaModule } from '../src/maka.module';
 
-describe('AppController (e2e)', () => {
-  let app: INestApplication;
+describe('MakaModule', () => {
+  let maka: INestApplication;
+  const showService = { GetShows: () => [] };
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
+  beforeAll(async () => {
+    const moduleRef = await Test.createTestingModule({
+      imports: [MakaModule, InventoryModule, ShowModule, PrismaModule],
+      providers: [AppointmentService],
+    })
+      .overrideProvider(ShowService)
+      .useValue(showService)
+      .compile();
+    maka = moduleRef.createNestApplication();
+    await maka.init();
   });
-
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
+  it('/GET shows', () => {
+    return request(maka.getHttpServer())
+      .get('/shows')
       .expect(200)
-      .expect('Hello World!');
+      .expect(showService.GetShows());
   });
+
+  afterAll(async () => await maka.close());
 });
