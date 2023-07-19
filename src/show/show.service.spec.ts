@@ -73,6 +73,9 @@ describe('ShowService', () => {
       spyShowService.GetShow = jest
         .fn()
         .mockReturnValue({ showID: 1, showName: 'show 1' });
+      spyInventoryService.UpdateInventory = jest
+        .fn()
+        .mockResolvedValue({ itemID: 1, itemName: 'item 1', quantity: 101 });
       prisma.soldInventories.create = jest.fn().mockResolvedValue({ count: 1 });
       await spyShowService.BuyItem(soldItemParams, soldItemQuantityDto);
       expect(spyInventoryService.GetInventory).toHaveBeenCalled();
