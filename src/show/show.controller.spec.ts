@@ -40,39 +40,47 @@ describe('ShowController', () => {
   it('should be defined', () => {
     expect(showController).toBeDefined();
   });
-  it('should call CreateShow method', async () => {
-    const dto = new CreateShowDto();
-    const result = await showController.create(dto);
-    expect(result).not.toEqual(null);
-    expect(result.message).toBeDefined();
-    expect(spyShowService.CreateShow).toHaveBeenCalled();
-    expect(spyShowService.CreateShow).toHaveBeenCalledWith(dto);
+  describe('CreateShow', () => {
+    it('should call CreateShow method', async () => {
+      const dto = new CreateShowDto();
+      const result = await showController.create(dto);
+      expect(result).not.toEqual(null);
+      expect(result.message).toBeDefined();
+      expect(spyShowService.CreateShow).toHaveBeenCalled();
+      expect(spyShowService.CreateShow).toHaveBeenCalledWith(dto);
+    });
   });
-  it('should call Getshows method', async () => {
-    const result = await showController.GetShows();
-    expect(result).not.toEqual(null);
-    expect(spyShowService.GetShows).toHaveBeenCalled();
-    expect(spyShowService.GetShows).toHaveBeenCalledWith();
+  describe('GetShows', () => {
+    it('should call Getshows method', async () => {
+      const result = await showController.GetShows();
+      expect(result).not.toEqual(null);
+      expect(spyShowService.GetShows).toHaveBeenCalled();
+      expect(spyShowService.GetShows).toHaveBeenCalledWith();
+    });
   });
-  it('should call BuyItem method', async () => {
-    const [soldItemParams, buyItemDto] = [
-      new SoldItemParams(),
-      new BuyItemDto(),
-    ];
-    const result = await showController.BuyItem(soldItemParams, buyItemDto);
-    expect(result).not.toEqual(null);
-    expect(result.message).toBeDefined();
-    expect(spyShowService.BuyItem).toHaveBeenCalled();
-    expect(spyShowService.BuyItem).toHaveBeenCalledWith(
-      soldItemParams,
-      buyItemDto,
-    );
+  describe('BuyItem', () => {
+    it('should call BuyItem method', async () => {
+      const [soldItemParams, buyItemDto] = [
+        new SoldItemParams(),
+        new BuyItemDto(),
+      ];
+      const result = await showController.BuyItem(soldItemParams, buyItemDto);
+      expect(result).not.toEqual(null);
+      expect(result.message).toBeDefined();
+      expect(spyShowService.BuyItem).toHaveBeenCalled();
+      expect(spyShowService.BuyItem).toHaveBeenCalledWith(
+        soldItemParams,
+        buyItemDto,
+      );
+    });
   });
-  it('should call GetSoldItems method', async () => {
-    const getSoldParams = new GetSoldParams();
-    const result = await showController.GetSoldItems(getSoldParams);
-    expect(result).not.toEqual(null);
-    expect(spyShowService.GetSoldItems).toHaveBeenCalled();
-    expect(spyShowService.GetSoldItems).toHaveBeenCalledWith(getSoldParams);
+  describe('GetSoldItems', () => {
+    it('should call GetSoldItems method', async () => {
+      const getSoldParams = new GetSoldParams();
+      const result = await showController.GetSoldItems(getSoldParams);
+      expect(result).not.toEqual(null);
+      expect(spyShowService.GetSoldItems).toHaveBeenCalled();
+      expect(spyShowService.GetSoldItems).toHaveBeenCalledWith(getSoldParams);
+    });
   });
 });

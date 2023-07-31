@@ -51,12 +51,13 @@ npm start
     }
   ```
 - View list of items sold by a show or amount of items sold by a show
-> GET /shows/:show_ID/sold_items?item_ID={item_ID}
+> GET /shows/:show_ID/sold_items
+
+- View count of an item sold by a show
+> GET /shows/:show_ID/sold_items/:item_ID
 
 ## Constraints
 ```bash
-- Could not put up some test because of time
-
 - The batchQueries could optimized and more cleaner
 ```
 
